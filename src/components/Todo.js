@@ -39,13 +39,15 @@ const Todo = props => {
     };
 
     const todoAddHandler = async () => {
-        setTodoList(todoList.concat(todoName));
         try {
             const res = await axios.post(
                 'https://react-hooks-95d0d.firebaseio.com/todos.json',
                 { name: todoName }
             );
+
             console.log(res);
+            const todoItem = { id: res.data.name, name: todoName };
+            setTodoList(prevList => prevList.concat(todoItem));
         } catch (err) {
             console.log(err);
         }
