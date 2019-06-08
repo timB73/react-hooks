@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useReducer } from 'react';
+import React, { useState, useEffect, useReducer, useRef } from 'react';
 import axios from 'axios';
 
 const Todo = props => {
-    const [todoName, setTodoName] = useState('');
+    // const [todoName, setTodoName] = useState('');
     // const [todoList, setTodoList] = useState([]);
+    const todoInputRef = useRef();
 
     const todoListReducer = (state, action) => {
         switch (action.type) {
@@ -49,11 +50,12 @@ const Todo = props => {
         };
     }, []);
 
-    const inputChangeHandler = event => {
-        setTodoName(event.target.value);
-    };
+    // const inputChangeHandler = event => {
+    //     setTodoName(event.target.value);
+    // };
 
     const todoAddHandler = async () => {
+        const todoName = todoInputRef.current.value;
         try {
             const res = await axios.post(
                 'https://react-hooks-95d0d.firebaseio.com/todos.json',
@@ -67,7 +69,7 @@ const Todo = props => {
         } catch (err) {
             console.log(err);
         }
-        setTodoName('');
+        // setTodoName('');
     };
 
     const todoRemoveHandler = async todoId => {
@@ -83,12 +85,7 @@ const Todo = props => {
 
     return (
         <React.Fragment>
-            <input
-                type="text"
-                placeholder="Todo"
-                onChange={inputChangeHandler}
-                value={todoName}
-            />
+            <input type="text" placeholder="Todo" ref={todoInputRef} />
             <button type="button" onClick={todoAddHandler}>
                 Add
             </button>
