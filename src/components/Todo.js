@@ -1,9 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import axios from 'axios';
 
 const Todo = props => {
     const [todoName, setTodoName] = useState('');
-    const [todoList, setTodoList] = useState([]);
+    // const [todoList, setTodoList] = useState([]);
+
+    const todoListReducer = (state, action) => {
+        switch (action.type) {
+            case 'ADD':
+                return state.concat(action.payload);
+            case 'SET':
+                return action.payload;
+            case 'REMOVE':
+                return state.filter(todo => todo.id !== action.payload);
+            default:
+                return state;
+        }
+    };
+
+    const [todoList, dispatch] = useReducer(todoListReducer, []);
 
     useEffect(() => {
         axios
@@ -15,7 +30,7 @@ const Todo = props => {
                 for (const key in todoData) {
                     todos.push({ id: key, name: todoData[key].name });
                 }
-                setTodoList(todos);
+                dispatch({ type: 'SET', payload: todos });
             });
 
         return () => {
@@ -44,14 +59,26 @@ const Todo = props => {
                 'https://react-hooks-95d0d.firebaseio.com/todos.json',
                 { name: todoName }
             );
-
-            console.log(res);
-            const todoItem = { id: res.data.name, name: todoName };
-            setTodoList(prevList => prevList.concat(todoItem));
+            setTimeout(() => {
+                console.log(res);
+                const todoItem = { id: res.data.name, name: todoName };
+                dispatch({ type: 'ADD', payload: todoItem });
+            }, 3000);
         } catch (err) {
             console.log(err);
         }
         setTodoName('');
+    };
+
+    const todoRemoveHandler = async todoId => {
+        try {
+            await axios.delete(
+                `https://react-hooks-95d0d.firebaseio.com/todos/${todoId}.json`
+            );
+            dispatch({ type: 'REMOVE', payload: todoId });
+        } catch (err) {
+            console.log(err);
+        }
     };
 
     return (
@@ -67,7 +94,12 @@ const Todo = props => {
             </button>
             <ul>
                 {todoList.map(todo => (
-                    <li key={todo.id}>{todo.name}</li>
+                    <li
+                        key={todo.id}
+                        onClick={todoRemoveHandler.bind(this, todo.id)}
+                    >
+                        {todo.name}
+                    </li>
                 ))}
             </ul>
         </React.Fragment>
